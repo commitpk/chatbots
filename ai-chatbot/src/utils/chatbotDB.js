@@ -65,8 +65,12 @@ const toCamel = (row) => ({
 });
 
 export async function fetchChatbots() {
+  const { data: { user } } = await supabase.auth.getUser();
   const { data, error } = await supabase
-    .from("chatbots").select("*").order("created_at", { ascending: false });
+    .from("chatbots")
+    .select("*")
+    .eq("user_id", user.id)   // 내 것만
+    .order("created_at", { ascending: false });
   if (error) throw error;
   return data.map(toCamel);
 }
