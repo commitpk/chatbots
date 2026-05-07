@@ -37,7 +37,6 @@ export default function App() {
   const [pendingPublicBot, setPendingPublicBot] = useState(null);
 
   const enterChat = async (bot, key, owner = true) => {
-    window.alert('enterChat: ' + bot.name + ' / key:' + !!(key||apiKey));
     const usedKey = key || apiKey;
 
     // 내 봇인데 키 없으면 키 입력 요청

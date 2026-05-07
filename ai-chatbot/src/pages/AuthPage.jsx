@@ -24,13 +24,17 @@ export default function AuthPage() {
         setMessage("가입 확인 이메일을 보냈어요! 메일함을 확인해주세요 📬");
       }
     } catch (e) {
-      const msg = e.message?.includes("Invalid login")
+      const msg = e.message?.includes("Invalid login") || e.message?.includes("Invalid API key") || e.message?.includes("invalid_grant")
         ? "이메일 또는 비밀번호가 틀렸어요."
-        : e.message?.includes("already registered")
+        : e.message?.includes("already registered") || e.message?.includes("User already registered")
         ? "이미 가입된 이메일이에요. 로그인해주세요."
-        : e.message?.includes("Password should be")
+        : e.message?.includes("Password should be") || e.message?.includes("password")
         ? "비밀번호는 6자 이상이어야 해요."
-        : e.message || "오류가 발생했어요. 다시 시도해주세요.";
+        : e.message?.includes("Email not confirmed")
+        ? "이메일 인증이 필요해요. 메일함을 확인해주세요."
+        : e.message?.includes("rate limit")
+        ? "너무 많은 시도예요. 잠시 후 다시 시도해주세요."
+        : "오류가 발생했어요. 다시 시도해주세요.";
       setError(msg);
     } finally {
       setLoading(false);

@@ -41,7 +41,6 @@ export default function PublicLounge({ onEnter, onBack }) {
   );
 
   const handleCardClick = (bot) => {
-    window.alert('handleCardClick: ' + bot.name + ' / pw:' + bot.roomPassword);
     if (bot.roomPassword) {
       setSelected(bot);
       setPw("");
