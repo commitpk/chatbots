@@ -948,3 +948,15 @@ body {
   color: var(--text-hint);
   text-transform: uppercase;
 }
+
+/* ── Admin 뱃지 ── */
+.admin-badge {
+  font-size: 12px;
+  font-weight: 500;
+  color: #B45309;
+  background: #FEF3C7;
+  border: 0.5px solid #F59E0B;
+  border-radius: var(--radius-md);
+  padding: 2px 8px;
+  margin-left: 6px;
+}

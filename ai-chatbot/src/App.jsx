@@ -21,7 +21,7 @@ async function generateGreeting(apiKey, character) {
 }
 
 export default function App() {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
 
   const [apiKey, setApiKey] = useState(
     () => sessionStorage.getItem("anthropic_api_key") || ""
@@ -38,12 +38,19 @@ export default function App() {
   // owner: 내 대시보드에서 입장 시 true, 공개 라운지에서 남의 봇 입장 시 false
   const enterChat = async (bot, key, owner = true) => {
     const usedKey = key || apiKey;
+
+    // API 키 없으면 그 때 입력 요청
+    if (!usedKey) {
+      setPendingPublicBot({ ...bot, _owner: owner });
+      return;
+    }
+
     setActiveChatbot(bot);
     setIsOwner(owner);
     setHistory([]);
     setMessages([{ role: "ai", text: "…" }]);
     setScreen("chat");
-    setSidebarOpen(owner); // 내 챗봇이면 사이드바 열어서 바로 수정 가능, 남의 챗봇이면 닫힘
+    setSidebarOpen(owner);
     try {
       const greeting = await generateGreeting(usedKey, bot);
       setMessages([{ role: "ai", text: greeting }]);
@@ -60,12 +67,12 @@ export default function App() {
   if (pendingPublicBot) {
     return (
       <ApiKeyGate
-        description={`"${pendingPublicBot.name}" 챗봇을 사용하려면 본인의 Anthropic API 키가 필요해요.`}
+        description={`"${pendingPublicBot.name}"와 대화하려면 Anthropic API 키가 필요해요. 키는 브라우저에만 저장되며 서버로 전송되지 않아요.`}
         onSubmit={(key) => {
           sessionStorage.setItem("anthropic_api_key", key);
           setApiKey(key);
           const bot = pendingPublicBot;
-          const owner = bot.user_id === user.id; // 내가 만든 봇인지 재확인
+          const owner = bot._owner ?? (bot.user_id === user.id);
           setPendingPublicBot(null);
           enterChat(bot, key, owner);
         }}
@@ -74,16 +81,8 @@ export default function App() {
     );
   }
 
-  if (!apiKey) {
-    return (
-      <ApiKeyGate
-        onSubmit={(key) => {
-          sessionStorage.setItem("anthropic_api_key", key);
-          setApiKey(key);
-        }}
-      />
-    );
-  }
+  // API 키는 선택 사항 — 없어도 대시보드/라운지 탐색 가능
+  // 실제 대화 시도 시 enterChat 내부에서 요청
 
   if (screen === "lounge") {
     return (
@@ -105,7 +104,8 @@ export default function App() {
   if (screen === "dashboard") {
     return (
       <Dashboard
-        onSelectChatbot={(bot) => enterChat(bot, apiKey, true)} // 대시보드는 항상 내 봇
+        // admin은 모든 봇 수정 가능, 일반 유저는 본인 봇만
+        onSelectChatbot={(bot) => enterChat(bot, apiKey, isAdmin || bot.user_id === user.id)}
         onNewChatbot={() => {
           setActiveChatbot(null);
           setIsOwner(true);

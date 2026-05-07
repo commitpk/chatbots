@@ -4,24 +4,39 @@ import { supabase } from "../utils/supabase";
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(undefined); // undefined = 로딩 중
+  const [user, setUser] = useState(undefined);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  const checkAdmin = async (userId) => {
+    if (!userId) { setIsAdmin(false); return; }
+    const { data } = await supabase
+      .from("admins")
+      .select("user_id")
+      .eq("user_id", userId)
+      .single();
+    setIsAdmin(!!data);
+  };
 
   useEffect(() => {
-    // 현재 세션 확인
     supabase.auth.getSession().then(({ data }) => {
-      setUser(data.session?.user ?? null);
+      const u = data.session?.user ?? null;
+      setUser(u);
+      checkAdmin(u?.id);
     });
 
-    // 로그인/로그아웃 변화 감지
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_, session) => setUser(session?.user ?? null)
+      (_, session) => {
+        const u = session?.user ?? null;
+        setUser(u);
+        checkAdmin(u?.id);
+      }
     );
 
     return () => subscription.unsubscribe();
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user }}>
+    <AuthContext.Provider value={{ user, isAdmin }}>
       {children}
     </AuthContext.Provider>
   );

@@ -100,3 +100,12 @@ export async function deleteChatbot(id) {
   const { error } = await supabase.from("chatbots").delete().eq("id", id);
   if (error) throw error;
 }
+
+export async function fetchAllChatbots() {
+  const { data, error } = await supabase
+    .from("chatbots")
+    .select("*")
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return data.map(toCamel);
+}

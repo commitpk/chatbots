@@ -1,20 +1,22 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../utils/supabase";
-import { fetchChatbots, deleteChatbot } from "../utils/chatbotDB";
+import { fetchChatbots, fetchAllChatbots, deleteChatbot } from "../utils/chatbotDB";
+import { useAuth } from "../utils/AuthContext";
 
 export default function Dashboard({ onSelectChatbot, onNewChatbot, onLounge }) {
+  const { isAdmin } = useAuth();
   const [chatbots, setChatbots] = useState([]);
   const [loading, setLoading] = useState(true);
   const [userEmail, setUserEmail] = useState("");
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setUserEmail(data.user?.email || ""));
-    loadChatbots();
+    loadChatbots(isAdmin);
   }, []);
 
-  const loadChatbots = async () => {
+  const loadChatbots = async (admin = false) => {
     setLoading(true);
-    try { setChatbots(await fetchChatbots()); }
+    try { setChatbots(admin ? await fetchAllChatbots() : await fetchChatbots()); }
     catch (e) { console.error(e); }
     finally { setLoading(false); }
   };
@@ -32,6 +34,7 @@ export default function Dashboard({ onSelectChatbot, onNewChatbot, onLounge }) {
         <div className="dash-header-left">
           <span className="dash-logo">🤖</span>
           <span className="dash-title">내 챗봇</span>
+          {isAdmin && <span className="admin-badge">👑 Admin</span>}
         </div>
         <div className="dash-header-right">
           {/* 공개 라운지 버튼 */}
