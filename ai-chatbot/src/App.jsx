@@ -65,8 +65,9 @@ export default function App() {
           sessionStorage.setItem("anthropic_api_key", key);
           setApiKey(key);
           const bot = pendingPublicBot;
+          const owner = bot.user_id === user.id; // 내가 만든 봇인지 재확인
           setPendingPublicBot(null);
-          enterChat(bot, key, false); // 남의 봇 → owner: false
+          enterChat(bot, key, owner);
         }}
         onCancel={() => setPendingPublicBot(null)}
       />
@@ -122,6 +123,10 @@ export default function App() {
   const character = activeChatbot || { name: "새 캐릭터", emoji: "🐱", personality: "" };
 
   const handleApply = async (newChar) => {
+    if (!isOwner) {
+      alert("본인이 만든 챗봇만 수정할 수 있어요.");
+      return;
+    }
     try {
       let saved;
       if (activeChatbot?.id) {
