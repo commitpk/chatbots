@@ -910,3 +910,41 @@ body {
   transition: color 0.15s;
 }
 .lounge-back-btn:hover { color: var(--primary); }
+
+/* ── 채팅 상단 홈 버튼 바 ── */
+.chat-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 16px;
+  border-bottom: 0.5px solid var(--border);
+  background: var(--bg);
+  position: relative;
+}
+
+.home-btn {
+  background: none;
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 4px 14px;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 12px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.home-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+/* ── 사이드바 섹션 라벨 ── */
+.sidebar-section-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--text-hint);
+  text-transform: uppercase;
+}

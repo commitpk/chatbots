@@ -32,7 +32,7 @@ export default function Sidebar({ character, onApply, onKeyReset, onBack, isSave
   return (
     <aside className="sidebar">
       <div className="sidebar-top-row">
-        <button className="back-btn" onClick={onBack}>← 내 챗봇 목록</button>
+        <span className="sidebar-section-label">캐릭터 설정</span>
         <button className="sidebar-close-btn" onClick={onClose} title="설정 닫기">✕</button>
       </div>
 

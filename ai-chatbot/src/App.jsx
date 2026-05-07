@@ -191,8 +191,8 @@ export default function App() {
         onSend={handleSend}
         onReset={handleReset}
         sidebarOpen={sidebarOpen && isOwner}
-        // 내 챗봇이 아니면 토글 버튼 자체를 숨김
         onToggleSidebar={isOwner ? () => setSidebarOpen((v) => !v) : null}
+        onHome={() => setScreen("dashboard")}
       />
     </div>
   );

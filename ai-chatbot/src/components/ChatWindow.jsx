@@ -6,6 +6,7 @@ export default function ChatWindow({
   character, messages, isLoading,
   onSend, onReset,
   sidebarOpen, onToggleSidebar,
+  onHome,
 }) {
   const bottomRef = useRef(null);
 
@@ -15,6 +16,13 @@ export default function ChatWindow({
 
   return (
     <div className="chat-area">
+      {/* 상단 홈 버튼 바 */}
+      <div className="chat-topbar">
+        <button className="home-btn" onClick={onHome}>
+          ← 홈
+        </button>
+      </div>
+
       <div className="chat-header">
         {/* 사이드바 토글 버튼: 내 챗봇일 때만 표시 */}
         {onToggleSidebar && (
