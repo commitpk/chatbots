@@ -1133,3 +1133,15 @@ body {
     font-size: 12px;
   }
 }
+
+/* ── 터치 최적화 ── */
+.chatbot-card {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  cursor: pointer;
+}
+
+button {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}

@@ -88,7 +88,7 @@ export default function PublicLounge({ onEnter, onBack }) {
         ) : (
           <div className="chatbot-grid">
             {bots.map((bot) => (
-              <div key={bot.id} className="chatbot-card" onClick={() => handleCardClick(bot)}>
+              <div key={bot.id} className="chatbot-card" onClick={() => handleCardClick(bot)} onTouchEnd={(e) => { e.preventDefault(); handleCardClick(bot); }}>
                 <div className="chatbot-card-avatar">
                   {bot.avatar_url
                     ? <img src={bot.avatar_url} alt="avatar" className="chatbot-card-avatar-img" />
