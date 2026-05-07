@@ -18,7 +18,13 @@ export function AuthProvider({ children }) {
   };
 
   useEffect(() => {
+    // 3초 안에 응답 없으면 비로그인으로 처리 (모바일 느린 응답 대응)
+    const timeout = setTimeout(() => {
+      setUser((prev) => prev === undefined ? null : prev);
+    }, 3000);
+
     supabase.auth.getSession().then(({ data }) => {
+      clearTimeout(timeout);
       const u = data.session?.user ?? null;
       setUser(u);
       checkAdmin(u?.id);
