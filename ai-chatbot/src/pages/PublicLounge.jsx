@@ -117,7 +117,7 @@ export default function PublicLounge({ onEnter, onBack }) {
         </div>
 
         {/* 봇 목록 */}
-        <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
+        <div style={{ maxWidth: 860, width: "100%", margin: "0 auto", padding: 24, display: "flex", flexDirection: "column", gap: 12 }}>
           {loading && <p style={{ color: "var(--text-muted)", textAlign: "center", padding: 40 }}>불러오는 중...</p>}
           {!loading && bots.length === 0 && !search && (
             <p style={{ color: "var(--text-muted)", textAlign: "center", padding: 40 }}>공개된 챗봇이 없어요</p>
