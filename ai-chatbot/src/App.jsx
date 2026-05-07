@@ -9,6 +9,7 @@ import ChatWindow from "./components/ChatWindow";
 import { buildSystemPrompt } from "./utils/prompt";
 import { sendMessageToAPI } from "./utils/api";
 import { createChatbot, updateChatbot } from "./utils/chatbotDB";
+import { loadHistory, saveHistory, clearHistory } from "./utils/chatHistory";
 
 async function generateGreeting(apiKey, character) {
   const reply = await sendMessageToAPI(apiKey, buildSystemPrompt(character), [
@@ -28,18 +29,16 @@ export default function App() {
   );
   const [screen, setScreen] = useState("dashboard");
   const [activeChatbot, setActiveChatbot] = useState(null);
-  const [isOwner, setIsOwner] = useState(false); // 내가 만든 챗봇인지 여부
+  const [isOwner, setIsOwner] = useState(false);
   const [messages, setMessages] = useState([]);
   const [history, setHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [pendingPublicBot, setPendingPublicBot] = useState(null);
 
-  // owner: 내 대시보드에서 입장 시 true, 공개 라운지에서 남의 봇 입장 시 false
   const enterChat = async (bot, key, owner = true) => {
     const usedKey = key || apiKey;
 
-    // API 키 없으면 그 때 입력 요청
     if (!usedKey) {
       setPendingPublicBot({ ...bot, _owner: owner });
       return;
@@ -47,15 +46,29 @@ export default function App() {
 
     setActiveChatbot(bot);
     setIsOwner(owner);
-    setHistory([]);
-    setMessages([{ role: "ai", text: "…" }]);
     setScreen("chat");
     setSidebarOpen(owner);
-    try {
-      const greeting = await generateGreeting(usedKey, bot);
-      setMessages([{ role: "ai", text: greeting }]);
-    } catch {
-      setMessages([{ role: "ai", text: "..." }]);
+
+    // DB에서 기존 대화 기록 불러오기
+    const saved = await loadHistory(bot.id);
+
+    if (saved.messages.length > 0) {
+      // 이전 대화 기록 복원
+      setMessages(saved.messages);
+      setHistory(saved.history);
+    } else {
+      // 첫 대화 — 인사 생성
+      setMessages([{ role: "ai", text: "…" }]);
+      setHistory([]);
+      try {
+        const greeting = await generateGreeting(usedKey, bot);
+        const firstMsg = [{ role: "ai", text: greeting }];
+        setMessages(firstMsg);
+        // 첫 인사도 저장
+        await saveHistory(bot.id, [], firstMsg);
+      } catch {
+        setMessages([{ role: "ai", text: "..." }]);
+      }
     }
   };
 
@@ -81,20 +94,13 @@ export default function App() {
     );
   }
 
-  // API 키는 선택 사항 — 없어도 대시보드/라운지 탐색 가능
-  // 실제 대화 시도 시 enterChat 내부에서 요청
-
   if (screen === "lounge") {
     return (
       <PublicLounge
         onEnter={(bot) => {
-          // 본인이 만든 공개 봇인지 확인
           const owner = bot.user_id === user.id;
-          if (!apiKey) {
-            setPendingPublicBot(bot);
-          } else {
-            enterChat(bot, apiKey, owner);
-          }
+          if (!apiKey) setPendingPublicBot(bot);
+          else enterChat(bot, apiKey, owner);
         }}
         onBack={() => setScreen("dashboard")}
       />
@@ -104,7 +110,6 @@ export default function App() {
   if (screen === "dashboard") {
     return (
       <Dashboard
-        // admin은 모든 봇 수정 가능, 일반 유저는 본인 봇만
         onSelectChatbot={(bot) => enterChat(bot, apiKey, isAdmin || bot.user_id === user.id)}
         onNewChatbot={() => {
           setActiveChatbot(null);
@@ -119,14 +124,10 @@ export default function App() {
     );
   }
 
-  // 채팅 화면
   const character = activeChatbot || { name: "새 캐릭터", emoji: "🐱", personality: "" };
 
   const handleApply = async (newChar) => {
-    if (!isOwner) {
-      alert("본인이 만든 챗봇만 수정할 수 있어요.");
-      return;
-    }
+    if (!isOwner) { alert("본인이 만든 챗봇만 수정할 수 있어요."); return; }
     try {
       let saved;
       if (activeChatbot?.id) {
@@ -143,13 +144,19 @@ export default function App() {
   const handleSend = async (text) => {
     if (isLoading || !text.trim()) return;
     const newHistory = [...history, { role: "user", content: text }];
-    setMessages((prev) => [...prev, { role: "user", text }]);
+    const newMessages = [...messages, { role: "user", text }];
+    setMessages(newMessages);
     setHistory(newHistory);
     setIsLoading(true);
+
     try {
       const reply = await sendMessageToAPI(apiKey, buildSystemPrompt(character), newHistory);
-      setMessages((prev) => [...prev, { role: "ai", text: reply }]);
-      setHistory((prev) => [...prev, { role: "assistant", content: reply }]);
+      const updatedHistory = [...newHistory, { role: "assistant", content: reply }];
+      const updatedMessages = [...newMessages, { role: "ai", text: reply }];
+      setMessages(updatedMessages);
+      setHistory(updatedHistory);
+      // 매 메시지마다 DB에 저장
+      await saveHistory(activeChatbot?.id, updatedHistory, updatedMessages);
     } catch (e) {
       const msg = e.message?.includes("401") ? "API 키가 유효하지 않아요."
         : e.message?.includes("429") ? "요청이 너무 많아요. 잠깐 후 다시 시도해줘!"
@@ -161,11 +168,15 @@ export default function App() {
   };
 
   const handleReset = async () => {
+    // DB 기록 삭제 후 새 인사 생성
+    await clearHistory(activeChatbot?.id);
     setHistory([]);
     setMessages([{ role: "ai", text: "…" }]);
     try {
       const greeting = await generateGreeting(apiKey, character);
-      setMessages([{ role: "ai", text: greeting }]);
+      const firstMsg = [{ role: "ai", text: greeting }];
+      setMessages(firstMsg);
+      await saveHistory(activeChatbot?.id, [], firstMsg);
     } catch {
       setMessages([{ role: "ai", text: "..." }]);
     }
@@ -173,7 +184,6 @@ export default function App() {
 
   return (
     <div className="app-container">
-      {/* 사이드바: 내 챗봇(isOwner)일 때만 열 수 있음 */}
       {sidebarOpen && isOwner && (
         <Sidebar
           character={character}
