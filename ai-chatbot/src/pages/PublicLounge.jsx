@@ -7,6 +7,7 @@ export default function PublicLounge({ onEnter, onBack }) {
   const [selected, setSelected] = useState(null);
   const [pw, setPw] = useState("");
   const [pwError, setPwError] = useState("");
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     (async () => {
@@ -32,6 +33,12 @@ export default function PublicLounge({ onEnter, onBack }) {
       setLoading(false);
     })();
   }, []);
+
+  const filtered = bots.filter((b) =>
+    b.name.toLowerCase().includes(search.toLowerCase()) ||
+    (b.personalityKeywords || "").toLowerCase().includes(search.toLowerCase()) ||
+    (b.personalityDesc || "").toLowerCase().includes(search.toLowerCase())
+  );
 
   const handleCardClick = (bot) => {
     if (bot.roomPassword) {
@@ -88,13 +95,37 @@ export default function PublicLounge({ onEnter, onBack }) {
           <span style={{ fontSize: 16, fontWeight: 500 }}>공개 챗봇 라운지</span>
         </div>
 
+        {/* 검색창 */}
+        <div style={{ padding: "10px 16px", background: "var(--bg)", borderBottom: "0.5px solid var(--border)" }}>
+          <input
+            type="search"
+            placeholder="🔍  이름, 성격으로 검색..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "8px 12px",
+              fontSize: 14,
+              border: "0.5px solid var(--border-strong)",
+              borderRadius: 8,
+              background: "var(--bg-secondary)",
+              color: "var(--text)",
+              fontFamily: "inherit",
+              outline: "none",
+            }}
+          />
+        </div>
+
         {/* 봇 목록 */}
         <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
           {loading && <p style={{ color: "var(--text-muted)", textAlign: "center", padding: 40 }}>불러오는 중...</p>}
-          {!loading && bots.length === 0 && (
+          {!loading && bots.length === 0 && !search && (
             <p style={{ color: "var(--text-muted)", textAlign: "center", padding: 40 }}>공개된 챗봇이 없어요</p>
           )}
-          {bots.map((bot) => (
+          {filtered.length === 0 && !loading && search && (
+            <p style={{ color: "var(--text-muted)", textAlign: "center", padding: 24 }}>검색 결과가 없어요</p>
+          )}
+          {filtered.map((bot) => (
             <button
               key={bot.id}
               onClick={() => handleCardClick(bot)}
