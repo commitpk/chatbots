@@ -95,29 +95,25 @@ export default function PublicLounge({ onEnter, onBack }) {
           <span style={{ fontSize: 16, fontWeight: 500 }}>공개 챗봇 라운지</span>
         </div>
 
-        {/* 검색창 */}
-        <div style={{ padding: "10px 16px", background: "var(--bg)", borderBottom: "0.5px solid var(--border)" }}>
+        {/* 검색창 + 봇 목록 */}
+        <div style={{ maxWidth: 860, width: "100%", margin: "0 auto", padding: 24, display: "flex", flexDirection: "column", gap: 12, minHeight: 300 }}>
           <input
             type="search"
-            placeholder="🔍  이름, 성격으로 검색..."
+            placeholder="이름, 성격으로 검색..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             style={{
               width: "100%",
-              padding: "8px 12px",
+              padding: "9px 14px",
               fontSize: 14,
               border: "0.5px solid var(--border-strong)",
               borderRadius: 8,
-              background: "var(--bg-secondary)",
+              background: "var(--bg)",
               color: "var(--text)",
               fontFamily: "inherit",
               outline: "none",
             }}
           />
-        </div>
-
-        {/* 봇 목록 */}
-        <div style={{ maxWidth: 860, width: "100%", margin: "0 auto", padding: 24, display: "flex", flexDirection: "column", gap: 12 }}>
           {loading && <p style={{ color: "var(--text-muted)", textAlign: "center", padding: 40 }}>불러오는 중...</p>}
           {!loading && bots.length === 0 && !search && (
             <p style={{ color: "var(--text-muted)", textAlign: "center", padding: 40 }}>공개된 챗봇이 없어요</p>
