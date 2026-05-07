@@ -12,10 +12,39 @@ export default function PublicLounge({ onEnter, onBack }) {
     (async () => {
       const { data, error } = await supabase
         .from("chatbots")
-        .select("id, user_id, name, emoji, avatar_url, personality_desc, personality_keywords, room_password")
+        .select("id, user_id, name, alias, emoji, avatar_url, personality_keywords, personality_desc, background, speech_level, user_title, endings, habits, forbidden, sample_greeting, sample_warm, sample_flustered, sample_angry, sample_vulnerable, knowledge_knows, knowledge_not, sensitive_topic, user_position, char_view_user, default_mood, user_call_name, room_password, is_public")
         .eq("is_public", true)
         .order("created_at", { ascending: false });
-      if (!error) setBots(data.map(b => ({ ...b, avatarUrl: b.avatar_url })));
+      if (!error) setBots(data.map(b => ({
+        id:                  b.id,
+        user_id:             b.user_id,
+        name:                b.name,
+        alias:               b.alias,
+        emoji:               b.emoji,
+        avatarUrl:           b.avatar_url,
+        personalityKeywords: b.personality_keywords,
+        personalityDesc:     b.personality_desc,
+        background:          b.background,
+        speechLevel:         b.speech_level,
+        userTitle:           b.user_title,
+        endings:             b.endings,
+        habits:              b.habits,
+        forbidden:           b.forbidden,
+        sampleGreeting:      b.sample_greeting,
+        sampleWarm:          b.sample_warm,
+        sampleFlustered:     b.sample_flustered,
+        sampleAngry:         b.sample_angry,
+        sampleVulnerable:    b.sample_vulnerable,
+        knowledgeKnows:      b.knowledge_knows,
+        knowledgeNot:        b.knowledge_not,
+        sensitiveTopic:      b.sensitive_topic,
+        userPosition:        b.user_position,
+        charViewUser:        b.char_view_user,
+        defaultMood:         b.default_mood,
+        userCallName:        b.user_call_name,
+        roomPassword:        b.room_password,
+        isPublic:            b.is_public,
+      })));
       setLoading(false);
     })();
   }, []);
