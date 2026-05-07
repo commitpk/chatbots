@@ -24,9 +24,10 @@ export default function AvatarUploader({ avatarUrl, onUpload }) {
     setUploading(true);
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession();
+      const userId = session?.user?.id;
       const ext = file.name.split(".").pop();
-      const path = `${user.id}/${Date.now()}.${ext}`;
+      const path = `${userId}/${Date.now()}.${ext}`;
 
       const { error: uploadError } = await supabase.storage
         .from("avatars")

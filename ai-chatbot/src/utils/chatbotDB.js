@@ -65,20 +65,24 @@ const toCamel = (row) => ({
 });
 
 export async function fetchChatbots() {
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { session } } = await supabase.auth.getSession();
+  const userId = session?.user?.id;
+  if (!userId) return [];
   const { data, error } = await supabase
     .from("chatbots")
     .select("*")
-    .eq("user_id", user.id)   // 내 것만
+    .eq("user_id", userId)
     .order("created_at", { ascending: false });
   if (error) throw error;
   return data.map(toCamel);
 }
 
 export async function createChatbot(character) {
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { session } } = await supabase.auth.getSession();
+  const userId = session?.user?.id;
+  if (!userId) throw new Error("로그인이 필요해요.");
   const { data, error } = await supabase
-    .from("chatbots").insert({ user_id: user.id, ...toSnake(character) })
+    .from("chatbots").insert({ user_id: userId, ...toSnake(character) })
     .select().single();
   if (error) throw error;
   return toCamel(data);
