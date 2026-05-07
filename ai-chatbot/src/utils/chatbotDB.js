@@ -27,6 +27,8 @@ const toSnake = (obj) => ({
   char_view_user:       obj.charViewUser,
   default_mood:         obj.defaultMood,
   user_call_name:       obj.userCallName,
+  is_public:            obj.isPublic ?? false,
+  room_password:        obj.roomPassword ?? '',
 });
 
 const toCamel = (row) => ({
@@ -57,6 +59,8 @@ const toCamel = (row) => ({
   charViewUser:         row.char_view_user,
   defaultMood:          row.default_mood,
   userCallName:         row.user_call_name,
+  isPublic:             row.is_public,
+  roomPassword:         row.room_password,
   created_at:           row.created_at,
 });
 

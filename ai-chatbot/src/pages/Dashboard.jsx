@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "../utils/supabase";
 import { fetchChatbots, deleteChatbot } from "../utils/chatbotDB";
 
-export default function Dashboard({ onSelectChatbot, onNewChatbot }) {
+export default function Dashboard({ onSelectChatbot, onNewChatbot, onLounge }) {
   const [chatbots, setChatbots] = useState([]);
   const [loading, setLoading] = useState(true);
   const [userEmail, setUserEmail] = useState("");
@@ -34,6 +34,8 @@ export default function Dashboard({ onSelectChatbot, onNewChatbot }) {
           <span className="dash-title">내 챗봇</span>
         </div>
         <div className="dash-header-right">
+          {/* 공개 라운지 버튼 */}
+          <button className="lounge-btn" onClick={onLounge}>🌐 공개 라운지</button>
           <span className="dash-email">{userEmail}</span>
           <button className="dash-logout-btn" onClick={() => supabase.auth.signOut()}>로그아웃</button>
         </div>
@@ -51,7 +53,6 @@ export default function Dashboard({ onSelectChatbot, onNewChatbot }) {
           <div className="chatbot-grid">
             {chatbots.map((bot) => (
               <div key={bot.id} className="chatbot-card" onClick={() => onSelectChatbot(bot)}>
-                {/* 아바타 */}
                 <div className="chatbot-card-avatar">
                   {bot.avatarUrl
                     ? <img src={bot.avatarUrl} alt="avatar" className="chatbot-card-avatar-img" />
@@ -59,7 +60,14 @@ export default function Dashboard({ onSelectChatbot, onNewChatbot }) {
                   }
                 </div>
                 <div className="chatbot-card-info">
-                  <div className="chatbot-card-name">{bot.name}</div>
+                  <div className="chatbot-card-name">
+                    {bot.name}
+                    {bot.isPublic && (
+                      <span className="public-badge">
+                        {bot.roomPassword ? " 🔒" : " 🌐"}
+                      </span>
+                    )}
+                  </div>
                   {bot.personalityKeywords && (
                     <div className="chatbot-card-tone">{bot.personalityKeywords}</div>
                   )}

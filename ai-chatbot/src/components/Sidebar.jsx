@@ -11,6 +11,7 @@ const DEFAULT = {
   sampleGreeting: "", sampleWarm: "", sampleFlustered: "", sampleAngry: "", sampleVulnerable: "",
   knowledgeKnows: "", knowledgeNot: "", sensitiveTopic: "",
   userPosition: "", charViewUser: "", defaultMood: "", userCallName: "",
+  isPublic: false, roomPassword: "",
 };
 
 export default function Sidebar({ character, onApply, onKeyReset, onBack, isSaved, onClose }) {
@@ -157,6 +158,27 @@ export default function Sidebar({ character, onApply, onKeyReset, onBack, isSave
               <input className="field-input" placeholder="캐릭터가 유저를 뭐라고 부르는지" value={form.userCallName} onChange={set("userCallName")} />
             </Field>
           </>
+        )}
+      </div>
+
+      {/* 공개 설정 */}
+      <div className="public-setting-box">
+        <label className="public-toggle-row">
+          <input
+            type="checkbox"
+            checked={form.isPublic}
+            onChange={(e) => setForm((f) => ({ ...f, isPublic: e.target.checked }))}
+          />
+          <span>공개 라운지에 공개</span>
+        </label>
+        {form.isPublic && (
+          <input
+            className="field-input"
+            type="password"
+            placeholder="비밀번호 설정 (선택 — 비우면 자유 입장)"
+            value={form.roomPassword}
+            onChange={(e) => setForm((f) => ({ ...f, roomPassword: e.target.value }))}
+          />
         )}
       </div>
 

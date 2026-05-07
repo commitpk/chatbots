@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export default function ApiKeyGate({ onSubmit }) {
+export default function ApiKeyGate({ onSubmit, onCancel, description }) {
   const [key, setKey] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -57,7 +57,7 @@ export default function ApiKeyGate({ onSubmit }) {
         <div className="gate-icon">🤖</div>
         <h1 className="gate-title">나만의 AI 캐릭터 챗봇</h1>
         <p className="gate-desc">
-          시작하려면 Anthropic API 키를 입력하세요.
+          {description || "시작하려면 Anthropic API 키를 입력하세요."}
           <br />
           키는 브라우저에만 저장되며 서버로 전송되지 않아요.
         </p>
@@ -83,6 +83,9 @@ export default function ApiKeyGate({ onSubmit }) {
           {loading ? "확인 중..." : "시작하기 →"}
         </button>
 
+        {onCancel && (
+          <button className="key-reset-btn" style={{width:"100%"}} onClick={onCancel}>← 돌아가기</button>
+        )}
         <a
           className="gate-link"
           href="https://console.anthropic.com/settings/keys"
