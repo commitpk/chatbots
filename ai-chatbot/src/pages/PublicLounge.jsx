@@ -50,6 +50,7 @@ export default function PublicLounge({ onEnter, onBack }) {
   }, []);
 
   const handleCardClick = (bot) => {
+    window.alert('클릭됨: ' + bot.name);
     if (bot.room_password) {
       setSelected(bot);
       setPw("");
