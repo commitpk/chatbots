@@ -41,6 +41,7 @@ export default function PublicLounge({ onEnter, onBack }) {
   );
 
   const handleCardClick = (bot) => {
+    window.alert('handleCardClick: ' + bot.name);
     if (bot.roomPassword) {
       setSelected(bot);
       setPw("");
@@ -61,7 +62,7 @@ export default function PublicLounge({ onEnter, onBack }) {
 
   return (
     <>
-      <div style={{
+      <div className="lounge-page" style={{
         width: "100%",
         minHeight: "100dvh",
         background: "var(--bg-secondary)",
