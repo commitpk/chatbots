@@ -9,6 +9,7 @@ import { buildSystemPrompt } from "./utils/prompt";
 import { sendMessageToAPI, sendMessageViaServer } from "./utils/api";
 import { createChatbot, updateChatbot } from "./utils/chatbotDB";
 import { loadHistory, saveHistory, clearHistory } from "./utils/chatHistory";
+import { supabase } from "./utils/supabase";
 
 async function generateGreeting(apiKey, character) {
   const reply = await sendMessageToAPI(apiKey, buildSystemPrompt(character), [
@@ -44,7 +45,13 @@ export default function App() {
       return;
     }
 
-    // id 없으면 (저장 안 된 새 챗봇) 자동으로 DB에 저장
+    // ① 화면 전환 즉시 (API 기다리지 않음)
+    setScreen("chat");
+    setSidebarOpen(owner);
+    setMessages([{ role: "ai", text: "…" }]);
+    setHistory([]);
+
+    // ② id 없으면 자동 저장
     let resolvedBot = bot;
     if (!bot.id && owner) {
       try {
@@ -56,42 +63,39 @@ export default function App() {
 
     setActiveChatbot(resolvedBot);
     setIsOwner(owner);
-    setScreen("chat");
-    setSidebarOpen(owner);
 
-    // DB에서 기존 대화 기록 불러오기
+    // ③ 기존 대화 기록 불러오기
     const saved = await loadHistory(resolvedBot.id);
 
     if (saved.messages.length > 0) {
       setMessages(saved.messages);
       setHistory(saved.history);
-    } else {
-      setMessages([{ role: "ai", text: "…" }]);
-      setHistory([]);
-      try {
-        let greeting;
-        if (usedKey) {
-          greeting = await generateGreeting(usedKey, resolvedBot);
-        } else if (resolvedBot.isPublic) {
-          // 키 없는 공개 봇 방문자 — 서버 라우트로 인사 시도
-          const { data: { session } } = await (await import("./utils/supabase")).supabase.auth.getSession();
-          greeting = await sendMessageViaServer(
-            session.access_token,
-            resolvedBot.id,
-            buildSystemPrompt(resolvedBot),
-            [{ role: "user", content: "__SYSTEM__: 지금 대화가 시작됐습니다. 캐릭터로서 자연스러운 첫 인사를 한 마디만 해주세요. 설명 없이 대사만 출력하세요." }]
-          );
-        }
-        if (greeting) {
-          const firstMsg = [{ role: "ai", text: greeting }];
-          setMessages(firstMsg);
-          await saveHistory(resolvedBot.id, [], firstMsg);
-        } else {
-          setMessages([{ role: "ai", text: "안녕하세요! 무엇이든 말씀해보세요 😊" }]);
-        }
-      } catch {
+      return;
+    }
+
+    // ④ 첫 인사 생성
+    try {
+      let greeting;
+      if (usedKey) {
+        greeting = await generateGreeting(usedKey, resolvedBot);
+      } else if (resolvedBot.isPublic) {
+        const { data: { session } } = await supabase.auth.getSession();
+        greeting = await sendMessageViaServer(
+          session.access_token,
+          resolvedBot.id,
+          buildSystemPrompt(resolvedBot),
+          [{ role: "user", content: "__SYSTEM__: 지금 대화가 시작됐습니다. 캐릭터로서 자연스러운 첫 인사를 한 마디만 해주세요. 설명 없이 대사만 출력하세요." }]
+        );
+      }
+      if (greeting) {
+        const firstMsg = [{ role: "ai", text: greeting }];
+        setMessages(firstMsg);
+        await saveHistory(resolvedBot.id, [], firstMsg);
+      } else {
         setMessages([{ role: "ai", text: "안녕하세요! 무엇이든 말씀해보세요 😊" }]);
       }
+    } catch {
+      setMessages([{ role: "ai", text: "안녕하세요! 무엇이든 말씀해보세요 😊" }]);
     }
   };
 
@@ -130,8 +134,7 @@ export default function App() {
       <PublicLounge
         onEnter={(bot) => {
           const owner = bot.user_id === user.id;
-          if (!apiKey) setPendingPublicBot(bot);
-          else enterChat(bot, apiKey, owner);
+          enterChat(bot, apiKey, owner);
         }}
         onBack={() => setScreen("dashboard")}
       />
@@ -191,7 +194,7 @@ export default function App() {
       // 공개 봇 + 키 없음 → 서버 라우트로 제작자 키 사용
       let reply;
       if (!isOwner && !apiKey && activeChatbot?.isPublic) {
-        const { data: { session } } = await (await import("./utils/supabase")).supabase.auth.getSession();
+        const { data: { session } } = await supabase.auth.getSession();
         reply = await sendMessageViaServer(session.access_token, activeChatbot.id, buildSystemPrompt(character), newHistory);
       } else {
         reply = await sendMessageToAPI(apiKey, buildSystemPrompt(character), newHistory);

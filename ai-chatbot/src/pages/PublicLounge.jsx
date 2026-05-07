@@ -4,7 +4,7 @@ import { supabase } from "../utils/supabase";
 export default function PublicLounge({ onEnter, onBack }) {
   const [bots, setBots] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selected, setSelected] = useState(null); // 비밀번호 입력 대상
+  const [selected, setSelected] = useState(null);
   const [pw, setPw] = useState("");
   const [pwError, setPwError] = useState("");
 
@@ -16,42 +16,25 @@ export default function PublicLounge({ onEnter, onBack }) {
         .eq("is_public", true)
         .order("created_at", { ascending: false });
       if (!error) setBots(data.map(b => ({
-        id:                  b.id,
-        user_id:             b.user_id,
-        name:                b.name,
-        alias:               b.alias,
-        emoji:               b.emoji,
-        avatarUrl:           b.avatar_url,
-        personalityKeywords: b.personality_keywords,
-        personalityDesc:     b.personality_desc,
-        background:          b.background,
-        speechLevel:         b.speech_level,
-        userTitle:           b.user_title,
-        endings:             b.endings,
-        habits:              b.habits,
-        forbidden:           b.forbidden,
-        sampleGreeting:      b.sample_greeting,
-        sampleWarm:          b.sample_warm,
-        sampleFlustered:     b.sample_flustered,
-        sampleAngry:         b.sample_angry,
-        sampleVulnerable:    b.sample_vulnerable,
-        knowledgeKnows:      b.knowledge_knows,
-        knowledgeNot:        b.knowledge_not,
-        sensitiveTopic:      b.sensitive_topic,
-        userPosition:        b.user_position,
-        charViewUser:        b.char_view_user,
-        defaultMood:         b.default_mood,
-        userCallName:        b.user_call_name,
-        roomPassword:        b.room_password,
-        isPublic:            b.is_public,
+        id: b.id, user_id: b.user_id, name: b.name, alias: b.alias,
+        emoji: b.emoji, avatarUrl: b.avatar_url,
+        personalityKeywords: b.personality_keywords, personalityDesc: b.personality_desc,
+        background: b.background, speechLevel: b.speech_level, userTitle: b.user_title,
+        endings: b.endings, habits: b.habits, forbidden: b.forbidden,
+        sampleGreeting: b.sample_greeting, sampleWarm: b.sample_warm,
+        sampleFlustered: b.sample_flustered, sampleAngry: b.sample_angry,
+        sampleVulnerable: b.sample_vulnerable, knowledgeKnows: b.knowledge_knows,
+        knowledgeNot: b.knowledge_not, sensitiveTopic: b.sensitive_topic,
+        userPosition: b.user_position, charViewUser: b.char_view_user,
+        defaultMood: b.default_mood, userCallName: b.user_call_name,
+        roomPassword: b.room_password, isPublic: b.is_public,
       })));
       setLoading(false);
     })();
   }, []);
 
   const handleCardClick = (bot) => {
-    window.alert('클릭됨: ' + bot.name);
-    if (bot.room_password) {
+    if (bot.roomPassword) {
       setSelected(bot);
       setPw("");
       setPwError("");
@@ -61,7 +44,7 @@ export default function PublicLounge({ onEnter, onBack }) {
   };
 
   const handlePwSubmit = () => {
-    if (pw === selected.room_password) {
+    if (pw === selected.roomPassword) {
       onEnter(selected);
       setSelected(null);
     } else {
@@ -70,62 +53,119 @@ export default function PublicLounge({ onEnter, onBack }) {
   };
 
   return (
-    <div className="lounge-page">
-      <div className="dash-header">
-        <div className="dash-header-left">
-          <button className="lounge-back-btn" onClick={onBack}>← 내 챗봇</button>
-          <span className="dash-logo">🌐</span>
-          <span className="dash-title">공개 챗봇 라운지</span>
+    <>
+      <div style={{
+        width: "100%",
+        minHeight: "100dvh",
+        background: "var(--bg-secondary)",
+        display: "flex",
+        flexDirection: "column",
+      }}>
+        {/* 헤더 */}
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          padding: "16px 20px",
+          background: "var(--bg)",
+          borderBottom: "0.5px solid var(--border)",
+        }}>
+          <button
+            onClick={onBack}
+            style={{
+              background: "none",
+              border: "none",
+              fontSize: 13,
+              color: "var(--text-muted)",
+              cursor: "pointer",
+              padding: "4px 8px",
+              fontFamily: "inherit",
+            }}
+          >
+            ← 내 챗봇
+          </button>
+          <span style={{ fontSize: 20 }}>🌐</span>
+          <span style={{ fontSize: 16, fontWeight: 500 }}>공개 챗봇 라운지</span>
+        </div>
+
+        {/* 봇 목록 */}
+        <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
+          {loading && <p style={{ color: "var(--text-muted)", textAlign: "center", padding: 40 }}>불러오는 중...</p>}
+          {!loading && bots.length === 0 && (
+            <p style={{ color: "var(--text-muted)", textAlign: "center", padding: 40 }}>공개된 챗봇이 없어요</p>
+          )}
+          {bots.map((bot) => (
+            <button
+              key={bot.id}
+              onClick={() => handleCardClick(bot)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 14,
+                padding: "16px",
+                background: "var(--bg)",
+                border: "0.5px solid var(--border)",
+                borderRadius: 12,
+                cursor: "pointer",
+                textAlign: "left",
+                width: "100%",
+                fontFamily: "inherit",
+                color: "inherit",
+                WebkitTapHighlightColor: "rgba(127,119,221,0.15)",
+                touchAction: "manipulation",
+              }}
+            >
+              <div style={{
+                width: 48, height: 48, borderRadius: "50%",
+                background: "var(--primary-light)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 26, flexShrink: 0, overflow: "hidden",
+              }}>
+                {bot.avatarUrl
+                  ? <img src={bot.avatarUrl} alt="avatar" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
+                  : (bot.emoji || "🐱")
+                }
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 15, fontWeight: 500, marginBottom: 3 }}>
+                  {bot.name}{bot.roomPassword && " 🔒"}
+                </div>
+                {bot.personalityKeywords && (
+                  <div style={{ fontSize: 11, color: "var(--primary)", marginBottom: 4 }}>{bot.personalityKeywords}</div>
+                )}
+                {bot.personalityDesc && (
+                  <div style={{ fontSize: 12, color: "var(--text-muted)", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
+                    {bot.personalityDesc}
+                  </div>
+                )}
+              </div>
+            </button>
+          ))}
         </div>
       </div>
 
-      <div className="dash-body">
-        {loading ? (
-          <div className="dash-empty">불러오는 중...</div>
-        ) : bots.length === 0 ? (
-          <div className="dash-empty">
-            <p>아직 공개된 챗봇이 없어요</p>
-          </div>
-        ) : (
-          <div className="chatbot-grid">
-            {bots.map((bot) => (
-              <button key={bot.id} className="chatbot-card" onClick={() => handleCardClick(bot)}>
-                <div className="chatbot-card-avatar">
-                  {bot.avatar_url
-                    ? <img src={bot.avatar_url} alt="avatar" className="chatbot-card-avatar-img" />
-                    : (bot.emoji || "🐱")
-                  }
-                </div>
-                <div className="chatbot-card-info">
-                  <div className="chatbot-card-name">
-                    {bot.name}
-                    {bot.room_password && <span className="lock-icon"> 🔒</span>}
-                  </div>
-                  {bot.personality_keywords && (
-                    <div className="chatbot-card-tone">{bot.personality_keywords}</div>
-                  )}
-                  {bot.personality_desc && (
-                    <div className="chatbot-card-personality">{bot.personality_desc}</div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* 비밀번호 모달 */
+      {/* 비밀번호 모달 */}
       {selected && (
-        <div className="modal-overlay" onClick={() => setSelected(null)}>
-          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-avatar">
-              {selected.avatar_url
-                ? <img src={selected.avatar_url} alt="avatar" className="modal-avatar-img" />
-                : (selected.emoji || "🐱")
-              }
-            </div>
-            <h2 className="modal-title">{selected.name}</h2>
-            <p className="modal-desc">이 챗봇은 비밀번호가 필요해요.</p>
+        <div
+          onClick={() => setSelected(null)}
+          style={{
+            position: "fixed", inset: 0,
+            background: "rgba(0,0,0,0.4)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            zIndex: 100, padding: 24,
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "var(--bg)", borderRadius: 12,
+              padding: "32px 24px", width: "100%", maxWidth: 360,
+              display: "flex", flexDirection: "column", alignItems: "center", gap: 14,
+            }}
+          >
+            <div style={{ fontSize: 36 }}>{selected.emoji || "🐱"}</div>
+            <h2 style={{ fontSize: 18, fontWeight: 500 }}>{selected.name}</h2>
+            <p style={{ fontSize: 13, color: "var(--text-muted)" }}>비밀번호가 필요해요.</p>
             <input
               type="password"
               className="gate-input"
@@ -134,14 +174,15 @@ export default function PublicLounge({ onEnter, onBack }) {
               onChange={(e) => setPw(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handlePwSubmit()}
               autoFocus
+              style={{ width: "100%" }}
             />
-            {pwError && <p className="gate-error">{pwError}</p>}
-            <button className="gate-btn" onClick={handlePwSubmit} disabled={!pw}>
+            {pwError && <p style={{ fontSize: 12, color: "#D85A30" }}>{pwError}</p>}
+            <button className="gate-btn" onClick={handlePwSubmit} disabled={!pw} style={{ width: "100%" }}>
               입장하기
             </button>
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
