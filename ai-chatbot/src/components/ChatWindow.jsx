@@ -16,14 +16,16 @@ export default function ChatWindow({
   return (
     <div className="chat-area">
       <div className="chat-header">
-        {/* 사이드바 토글 버튼 */}
-        <button
-          className="sidebar-toggle-btn"
-          onClick={onToggleSidebar}
-          title={sidebarOpen ? "설정 닫기" : "설정 열기"}
-        >
-          {sidebarOpen ? "◀" : "☰"}
-        </button>
+        {/* 사이드바 토글 버튼: 내 챗봇일 때만 표시 */}
+        {onToggleSidebar && (
+          <button
+            className="sidebar-toggle-btn"
+            onClick={onToggleSidebar}
+            title={sidebarOpen ? "설정 닫기" : "설정 열기"}
+          >
+            {sidebarOpen ? "◀" : "☰"}
+          </button>
+        )}
 
         <div className="header-avatar">
           {character.avatarUrl

@@ -20,7 +20,6 @@ async function generateGreeting(apiKey, character) {
   return reply;
 }
 
-// screen: "dashboard" | "lounge" | "chat"
 export default function App() {
   const { user } = useAuth();
 
@@ -29,20 +28,22 @@ export default function App() {
   );
   const [screen, setScreen] = useState("dashboard");
   const [activeChatbot, setActiveChatbot] = useState(null);
+  const [isOwner, setIsOwner] = useState(false); // 내가 만든 챗봇인지 여부
   const [messages, setMessages] = useState([]);
   const [history, setHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  // 공개 라운지에서 입장할 때: 방문자 자신의 API 키 입력 게이트
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [pendingPublicBot, setPendingPublicBot] = useState(null);
 
-  const enterChat = async (bot, key) => {
+  // owner: 내 대시보드에서 입장 시 true, 공개 라운지에서 남의 봇 입장 시 false
+  const enterChat = async (bot, key, owner = true) => {
     const usedKey = key || apiKey;
     setActiveChatbot(bot);
+    setIsOwner(owner);
     setHistory([]);
     setMessages([{ role: "ai", text: "…" }]);
     setScreen("chat");
-    setSidebarOpen(false);
+    setSidebarOpen(owner); // 내 챗봇이면 사이드바 열어서 바로 수정 가능, 남의 챗봇이면 닫힘
     try {
       const greeting = await generateGreeting(usedKey, bot);
       setMessages([{ role: "ai", text: greeting }]);
@@ -51,15 +52,11 @@ export default function App() {
     }
   };
 
-  // ── 로딩 중 ──
   if (user === undefined) {
     return <div className="gate-overlay"><p style={{ color: "var(--text-muted)" }}>로딩 중...</p></div>;
   }
-
-  // ── 비로그인 ──
   if (!user) return <AuthPage />;
 
-  // ── 공개 라운지에서 챗봇 선택 후 API 키 입력 대기 ──
   if (pendingPublicBot) {
     return (
       <ApiKeyGate
@@ -69,14 +66,13 @@ export default function App() {
           setApiKey(key);
           const bot = pendingPublicBot;
           setPendingPublicBot(null);
-          enterChat(bot, key);
+          enterChat(bot, key, false); // 남의 봇 → owner: false
         }}
         onCancel={() => setPendingPublicBot(null)}
       />
     );
   }
 
-  // ── 내 API 키 미입력 ──
   if (!apiKey) {
     return (
       <ApiKeyGate
@@ -88,16 +84,16 @@ export default function App() {
     );
   }
 
-  // ── 공개 라운지 ──
   if (screen === "lounge") {
     return (
       <PublicLounge
         onEnter={(bot) => {
-          // 로그인 유저도 API 키 필요
+          // 본인이 만든 공개 봇인지 확인
+          const owner = bot.user_id === user.id;
           if (!apiKey) {
             setPendingPublicBot(bot);
           } else {
-            enterChat(bot, apiKey);
+            enterChat(bot, apiKey, owner);
           }
         }}
         onBack={() => setScreen("dashboard")}
@@ -105,13 +101,13 @@ export default function App() {
     );
   }
 
-  // ── 대시보드 ──
   if (screen === "dashboard") {
     return (
       <Dashboard
-        onSelectChatbot={(bot) => enterChat(bot)}
+        onSelectChatbot={(bot) => enterChat(bot, apiKey, true)} // 대시보드는 항상 내 봇
         onNewChatbot={() => {
           setActiveChatbot(null);
+          setIsOwner(true);
           setHistory([]);
           setMessages([]);
           setSidebarOpen(true);
@@ -122,7 +118,7 @@ export default function App() {
     );
   }
 
-  // ── 채팅 ──
+  // 채팅 화면
   const character = activeChatbot || { name: "새 캐릭터", emoji: "🐱", personality: "" };
 
   const handleApply = async (newChar) => {
@@ -133,7 +129,7 @@ export default function App() {
       } else {
         saved = await createChatbot(newChar);
       }
-      await enterChat(saved);
+      await enterChat(saved, apiKey, true);
     } catch (e) {
       alert("저장 중 오류가 발생했어요: " + e.message);
     }
@@ -172,7 +168,8 @@ export default function App() {
 
   return (
     <div className="app-container">
-      {sidebarOpen && (
+      {/* 사이드바: 내 챗봇(isOwner)일 때만 열 수 있음 */}
+      {sidebarOpen && isOwner && (
         <Sidebar
           character={character}
           onApply={handleApply}
@@ -188,8 +185,9 @@ export default function App() {
         isLoading={isLoading}
         onSend={handleSend}
         onReset={handleReset}
-        sidebarOpen={sidebarOpen}
-        onToggleSidebar={() => setSidebarOpen((v) => !v)}
+        sidebarOpen={sidebarOpen && isOwner}
+        // 내 챗봇이 아니면 토글 버튼 자체를 숨김
+        onToggleSidebar={isOwner ? () => setSidebarOpen((v) => !v) : null}
       />
     </div>
   );
