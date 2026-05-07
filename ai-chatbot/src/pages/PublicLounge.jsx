@@ -15,7 +15,7 @@ export default function PublicLounge({ onEnter, onBack }) {
         .select("id, user_id, name, emoji, avatar_url, personality_desc, personality_keywords, room_password")
         .eq("is_public", true)
         .order("created_at", { ascending: false });
-      if (!error) setBots(data);
+      if (!error) setBots(data.map(b => ({ ...b, avatarUrl: b.avatar_url })));
       setLoading(false);
     })();
   }, []);
