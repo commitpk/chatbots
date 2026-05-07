@@ -13,7 +13,7 @@ export async function loadHistory(chatbotId) {
     .select("messages, history")
     .eq("user_id", userId)
     .eq("chatbot_id", chatbotId)
-    .single();
+    .maybeSingle();
 
   if (error || !data) return { history: [], messages: [] };
   return { history: data.history, messages: data.messages };

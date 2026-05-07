@@ -44,13 +44,23 @@ export default function App() {
       return;
     }
 
-    setActiveChatbot(bot);
+    // id 없으면 (저장 안 된 새 챗봇) 자동으로 DB에 저장
+    let resolvedBot = bot;
+    if (!bot.id && owner) {
+      try {
+        resolvedBot = await createChatbot(bot);
+      } catch (e) {
+        console.error("자동 저장 실패:", e);
+      }
+    }
+
+    setActiveChatbot(resolvedBot);
     setIsOwner(owner);
     setScreen("chat");
     setSidebarOpen(owner);
 
     // DB에서 기존 대화 기록 불러오기
-    const saved = await loadHistory(bot.id);
+    const saved = await loadHistory(resolvedBot.id);
 
     if (saved.messages.length > 0) {
       // 이전 대화 기록 복원
@@ -61,11 +71,10 @@ export default function App() {
       setMessages([{ role: "ai", text: "…" }]);
       setHistory([]);
       try {
-        const greeting = await generateGreeting(usedKey, bot);
+        const greeting = await generateGreeting(usedKey, resolvedBot);
         const firstMsg = [{ role: "ai", text: greeting }];
         setMessages(firstMsg);
-        // 첫 인사도 저장
-        await saveHistory(bot.id, [], firstMsg);
+        await saveHistory(resolvedBot.id, [], firstMsg);
       } catch {
         setMessages([{ role: "ai", text: "..." }]);
       }
