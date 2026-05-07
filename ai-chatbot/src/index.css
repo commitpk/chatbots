@@ -960,3 +960,9 @@ body {
   padding: 2px 8px;
   margin-left: 6px;
 }
+
+/* ── 행동지문 ── */
+.action-text {
+  color: var(--text-muted);
+  font-style: italic;
+}
