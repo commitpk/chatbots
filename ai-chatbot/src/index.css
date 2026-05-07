@@ -966,3 +966,170 @@ body {
   color: var(--text-muted);
   font-style: italic;
 }
+
+/* ════════════════════════════════
+   모바일 최적화 (768px 이하)
+   ════════════════════════════════ */
+@media (max-width: 768px) {
+
+  /* body: 전체화면 */
+  body {
+    align-items: stretch;
+    justify-content: stretch;
+    min-height: 100dvh;
+  }
+
+  /* 앱 컨테이너: 전체화면 */
+  .app-container {
+    width: 100%;
+    height: 100dvh;
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
+  }
+
+  /* ── 사이드바: 모바일에서 슬라이드 오버레이 ── */
+  .sidebar {
+    position: fixed;
+    top: 0; left: 0;
+    width: 85vw;
+    max-width: 320px;
+    height: 100dvh;
+    z-index: 200;
+    box-shadow: 4px 0 24px rgba(0,0,0,0.15);
+    transform: translateX(0);
+    animation: slideIn 0.2s ease;
+  }
+
+  @keyframes slideIn {
+    from { transform: translateX(-100%); }
+    to   { transform: translateX(0); }
+  }
+
+  /* 사이드바 열릴 때 배경 딤 처리 */
+  .sidebar-dim {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 199;
+    animation: fadeIn 0.2s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  /* 채팅 영역: 전체 너비 */
+  .chat-area {
+    width: 100%;
+    flex: 1;
+  }
+
+  /* 상단 홈 버튼 바 */
+  .chat-topbar {
+    padding: 8px 12px;
+  }
+
+  /* 채팅 헤더 */
+  .chat-header {
+    padding: 10px 14px;
+    gap: 8px;
+  }
+
+  .char-name { font-size: 14px; }
+  .header-avatar { width: 32px; height: 32px; font-size: 18px; }
+
+  /* 메시지 */
+  .messages {
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .msg { max-width: 90%; }
+  .msg-bubble { font-size: 13px; padding: 8px 12px; }
+
+  /* 입력창 */
+  .input-area {
+    padding: 8px 12px;
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+  }
+
+  .input-area textarea { font-size: 16px; } /* iOS 줌 방지 */
+
+  /* ── 대시보드 ── */
+  .dash-header {
+    padding: 12px 16px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .dash-header-right {
+    gap: 8px;
+  }
+
+  .dash-email {
+    display: none; /* 모바일에서 이메일 숨김 */
+  }
+
+  .dash-body {
+    padding: 16px 12px;
+    gap: 16px;
+  }
+
+  .chatbot-grid {
+    grid-template-columns: 1fr; /* 1열 */
+    gap: 10px;
+  }
+
+  /* ── 게이트/모달 ── */
+  .gate-card {
+    padding: 32px 24px;
+    max-width: 100%;
+    border-radius: var(--radius-lg);
+  }
+
+  .modal-card {
+    padding: 28px 20px;
+    max-width: 100%;
+    margin: 0 16px;
+  }
+
+  /* ── 공개 라운지 ── */
+  .lounge-btn {
+    font-size: 12px;
+    padding: 5px 10px;
+  }
+
+  /* ── 섹션 탭 (사이드바) ── */
+  .section-tab {
+    font-size: 10px;
+    padding: 4px 6px;
+  }
+
+  /* ── 아바타 업로더 ── */
+  .avatar-preview {
+    width: 80px;
+    height: 80px;
+  }
+
+  /* reset-btn */
+  .reset-btn {
+    font-size: 11px;
+    padding: 3px 8px;
+  }
+}
+
+/* 아주 작은 화면 (360px 이하) */
+@media (max-width: 360px) {
+  .section-tabs {
+    gap: 3px;
+  }
+  .section-tab {
+    font-size: 9px;
+    padding: 3px 4px;
+  }
+  .msg-bubble {
+    font-size: 12px;
+  }
+}

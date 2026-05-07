@@ -248,6 +248,7 @@ export default function App() {
         onReset={handleReset}
         sidebarOpen={sidebarOpen && isOwner}
         onToggleSidebar={isOwner ? () => setSidebarOpen((v) => !v) : null}
+        onCloseSidebar={() => setSidebarOpen(false)}
         onHome={() => setScreen("dashboard")}
       />
     </div>

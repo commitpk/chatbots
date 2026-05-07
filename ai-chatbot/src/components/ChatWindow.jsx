@@ -6,7 +6,7 @@ export default function ChatWindow({
   character, messages, isLoading,
   onSend, onReset,
   sidebarOpen, onToggleSidebar,
-  onHome,
+  onHome, onCloseSidebar,
 }) {
   const bottomRef = useRef(null);
 
@@ -16,6 +16,10 @@ export default function ChatWindow({
 
   return (
     <div className="chat-area">
+      {/* 모바일 사이드바 딤 배경 */}
+      {sidebarOpen && (
+        <div className="sidebar-dim" onClick={onCloseSidebar} />
+      )}
       {/* 상단 홈 버튼 바 */}
       <div className="chat-topbar">
         <button className="home-btn" onClick={onHome}>
