@@ -1149,3 +1149,64 @@ button {
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
+
+/* ── 공개 라운지 페이지 ── */
+.lounge-page {
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-secondary);
+  position: relative;
+  z-index: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 모바일에서 카드 클릭 영역 확실히 보장 */
+@media (max-width: 768px) {
+  .chatbot-card {
+    position: relative;
+    z-index: 1;
+    min-height: 72px;
+  }
+
+  .dash-body,
+  .lounge-page .dash-body {
+    overflow: visible;
+    padding-bottom: 40px;
+  }
+
+  .chatbot-grid {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+/* ── 챗봇 카드 button 리셋 ── */
+button.chatbot-card {
+  width: 100%;
+  text-align: left;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: inherit;
+  color: inherit;
+  background: var(--bg);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px 16px;
+  cursor: pointer;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  position: relative;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  -webkit-tap-highlight-color: rgba(127, 119, 221, 0.1);
+  touch-action: manipulation;
+}
+
+button.chatbot-card:hover,
+button.chatbot-card:active {
+  border-color: var(--primary);
+  box-shadow: 0 2px 12px rgba(127, 119, 221, 0.12);
+}

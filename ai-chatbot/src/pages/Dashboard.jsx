@@ -55,7 +55,7 @@ export default function Dashboard({ onSelectChatbot, onNewChatbot, onLounge }) {
         ) : (
           <div className="chatbot-grid">
             {chatbots.map((bot) => (
-              <div key={bot.id} className="chatbot-card" onClick={() => onSelectChatbot(bot)} onTouchEnd={(e) => { e.preventDefault(); onSelectChatbot(bot); }}>
+              <button key={bot.id} className="chatbot-card" onClick={() => onSelectChatbot(bot)}>
                 <div className="chatbot-card-avatar">
                   {bot.avatarUrl
                     ? <img src={bot.avatarUrl} alt="avatar" className="chatbot-card-avatar-img" />
@@ -79,7 +79,7 @@ export default function Dashboard({ onSelectChatbot, onNewChatbot, onLounge }) {
                   )}
                 </div>
                 <button className="chatbot-card-delete" onClick={(e) => handleDelete(e, bot.id)}>✕</button>
-              </div>
+              </button>
             ))}
           </div>
         )}

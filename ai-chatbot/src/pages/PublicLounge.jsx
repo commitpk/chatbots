@@ -69,7 +69,7 @@ export default function PublicLounge({ onEnter, onBack }) {
   };
 
   return (
-    <div className="dashboard">
+    <div className="lounge-page">
       <div className="dash-header">
         <div className="dash-header-left">
           <button className="lounge-back-btn" onClick={onBack}>← 내 챗봇</button>
@@ -88,7 +88,7 @@ export default function PublicLounge({ onEnter, onBack }) {
         ) : (
           <div className="chatbot-grid">
             {bots.map((bot) => (
-              <div key={bot.id} className="chatbot-card" onClick={() => handleCardClick(bot)} onTouchEnd={(e) => { e.preventDefault(); handleCardClick(bot); }}>
+              <button key={bot.id} className="chatbot-card" onClick={() => handleCardClick(bot)}>
                 <div className="chatbot-card-avatar">
                   {bot.avatar_url
                     ? <img src={bot.avatar_url} alt="avatar" className="chatbot-card-avatar-img" />
@@ -113,7 +113,7 @@ export default function PublicLounge({ onEnter, onBack }) {
         )}
       </div>
 
-      {/* 비밀번호 모달 */}
+      {/* 비밀번호 모달 */
       {selected && (
         <div className="modal-overlay" onClick={() => setSelected(null)}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
