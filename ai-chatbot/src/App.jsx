@@ -1,13 +1,12 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useAuth } from "./utils/AuthContext";
 import AuthPage from "./pages/AuthPage";
 import Dashboard from "./pages/Dashboard";
 import PublicLounge from "./pages/PublicLounge";
-import ApiKeyGate from "./components/ApiKeyGate";
 import Sidebar from "./components/Sidebar";
 import ChatWindow from "./components/ChatWindow";
 import { buildSystemPrompt } from "./utils/prompt";
-import { sendMessageToAPI } from "./utils/api";
+import { sendMessageToAPI, sendMessageViaServer } from "./utils/api";
 import { createChatbot, updateChatbot } from "./utils/chatbotDB";
 import { loadHistory, saveHistory, clearHistory } from "./utils/chatHistory";
 
@@ -39,7 +38,8 @@ export default function App() {
   const enterChat = async (bot, key, owner = true) => {
     const usedKey = key || apiKey;
 
-    if (!usedKey) {
+    // 내 봇인데 키 없으면 키 입력 요청
+    if (!usedKey && owner) {
       setPendingPublicBot({ ...bot, _owner: owner });
       return;
     }
@@ -63,20 +63,34 @@ export default function App() {
     const saved = await loadHistory(resolvedBot.id);
 
     if (saved.messages.length > 0) {
-      // 이전 대화 기록 복원
       setMessages(saved.messages);
       setHistory(saved.history);
     } else {
-      // 첫 대화 — 인사 생성
       setMessages([{ role: "ai", text: "…" }]);
       setHistory([]);
       try {
-        const greeting = await generateGreeting(usedKey, resolvedBot);
-        const firstMsg = [{ role: "ai", text: greeting }];
-        setMessages(firstMsg);
-        await saveHistory(resolvedBot.id, [], firstMsg);
+        let greeting;
+        if (usedKey) {
+          greeting = await generateGreeting(usedKey, resolvedBot);
+        } else if (resolvedBot.isPublic) {
+          // 키 없는 공개 봇 방문자 — 서버 라우트로 인사 시도
+          const { data: { session } } = await (await import("./utils/supabase")).supabase.auth.getSession();
+          greeting = await sendMessageViaServer(
+            session.access_token,
+            resolvedBot.id,
+            buildSystemPrompt(resolvedBot),
+            [{ role: "user", content: "__SYSTEM__: 지금 대화가 시작됐습니다. 캐릭터로서 자연스러운 첫 인사를 한 마디만 해주세요. 설명 없이 대사만 출력하세요." }]
+          );
+        }
+        if (greeting) {
+          const firstMsg = [{ role: "ai", text: greeting }];
+          setMessages(firstMsg);
+          await saveHistory(resolvedBot.id, [], firstMsg);
+        } else {
+          setMessages([{ role: "ai", text: "안녕하세요! 무엇이든 말씀해보세요 😊" }]);
+        }
       } catch {
-        setMessages([{ role: "ai", text: "..." }]);
+        setMessages([{ role: "ai", text: "안녕하세요! 무엇이든 말씀해보세요 😊" }]);
       }
     }
   };
@@ -86,22 +100,30 @@ export default function App() {
   }
   if (!user) return <AuthPage />;
 
-  if (pendingPublicBot) {
-    return (
-      <ApiKeyGate
-        description={`"${pendingPublicBot.name}"와 대화하려면 Anthropic API 키가 필요해요. 키는 브라우저에만 저장되며 서버로 전송되지 않아요.`}
-        onSubmit={(key) => {
-          sessionStorage.setItem("anthropic_api_key", key);
-          setApiKey(key);
-          const bot = pendingPublicBot;
-          const owner = bot._owner ?? (bot.user_id === user.id);
-          setPendingPublicBot(null);
-          enterChat(bot, key, owner);
-        }}
-        onCancel={() => setPendingPublicBot(null)}
-      />
-    );
-  }
+  // pendingPublicBot은 오버레이로 처리 (채팅 화면 위에 표시)
+  const apiKeyOverlay = pendingPublicBot ? (
+    <div className="modal-overlay" onClick={() => setPendingPublicBot(null)}>
+      <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+        <div className="gate-icon">🔑</div>
+        <h2 className="modal-title">API 키 필요</h2>
+        <p className="modal-desc">
+          대화하려면 Anthropic API 키가 필요해요.<br />
+          키는 브라우저에만 저장돼요.
+        </p>
+        <ApiKeyGateInline
+          onSubmit={(key) => {
+            sessionStorage.setItem("anthropic_api_key", key);
+            setApiKey(key);
+            const bot = pendingPublicBot;
+            const owner = bot._owner ?? (bot.user_id === user.id);
+            setPendingPublicBot(null);
+            enterChat(bot, key, owner);
+          }}
+          onCancel={() => setPendingPublicBot(null)}
+        />
+      </div>
+    </div>
+  ) : null;
 
   if (screen === "lounge") {
     return (
@@ -152,6 +174,13 @@ export default function App() {
 
   const handleSend = async (text) => {
     if (isLoading || !text.trim()) return;
+
+    // 키 없으면 그 때 요청
+    if (!apiKey) {
+      setPendingPublicBot({ ...activeChatbot, _owner: isOwner });
+      return;
+    }
+
     const newHistory = [...history, { role: "user", content: text }];
     const newMessages = [...messages, { role: "user", text }];
     setMessages(newMessages);
@@ -159,7 +188,14 @@ export default function App() {
     setIsLoading(true);
 
     try {
-      const reply = await sendMessageToAPI(apiKey, buildSystemPrompt(character), newHistory);
+      // 공개 봇 + 키 없음 → 서버 라우트로 제작자 키 사용
+      let reply;
+      if (!isOwner && !apiKey && activeChatbot?.isPublic) {
+        const { data: { session } } = await (await import("./utils/supabase")).supabase.auth.getSession();
+        reply = await sendMessageViaServer(session.access_token, activeChatbot.id, buildSystemPrompt(character), newHistory);
+      } else {
+        reply = await sendMessageToAPI(apiKey, buildSystemPrompt(character), newHistory);
+      }
       const updatedHistory = [...newHistory, { role: "assistant", content: reply }];
       const updatedMessages = [...newMessages, { role: "ai", text: reply }];
       setMessages(updatedMessages);
@@ -193,9 +229,10 @@ export default function App() {
 
   return (
     <div className="app-container">
+      {apiKeyOverlay}
       {sidebarOpen && isOwner && (
         <Sidebar
-          character={character}
+          character={{ ...character, id: activeChatbot?.id }}
           onApply={handleApply}
           onKeyReset={() => { sessionStorage.removeItem("anthropic_api_key"); setApiKey(""); }}
           onBack={() => setScreen("dashboard")}
@@ -213,6 +250,50 @@ export default function App() {
         onToggleSidebar={isOwner ? () => setSidebarOpen((v) => !v) : null}
         onHome={() => setScreen("dashboard")}
       />
+    </div>
+  );
+}
+
+// 모달 안에서 쓰는 간소화된 API 키 입력 컴포넌트
+function ApiKeyGateInline({ onSubmit, onCancel }) {
+  const [key, setKey] = React.useState("");
+  const [error, setError] = React.useState("");
+  const [loading, setLoading] = React.useState(false);
+
+  const handleSubmit = async () => {
+    const trimmed = key.trim();
+    if (!trimmed.startsWith("sk-ant-")) {
+      setError("올바른 API 키 형식이 아니에요. (sk-ant-로 시작)");
+      return;
+    }
+    setLoading(true);
+    setError("");
+    try {
+      onSubmit(trimmed);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: 10 }}>
+      <input
+        type="password"
+        className="gate-input"
+        placeholder="sk-ant-..."
+        value={key}
+        onChange={(e) => setKey(e.target.value)}
+        onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+        autoFocus
+      />
+      {error && <p className="gate-error">{error}</p>}
+      <button className="gate-btn" onClick={handleSubmit} disabled={loading || !key.trim()}>
+        {loading ? "확인 중..." : "대화 시작하기"}
+      </button>
+      <a className="gate-link" href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener noreferrer">
+        API 키 발급받기 ↗
+      </a>
+      <button className="key-reset-btn" onClick={onCancel}>취소</button>
     </div>
   );
 }

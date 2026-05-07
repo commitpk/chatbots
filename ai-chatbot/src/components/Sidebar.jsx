@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { saveBotApiKey } from "../utils/api";
+import { supabase } from "../utils/supabase";
 import AvatarUploader from "./AvatarUploader";
 
 const SECTIONS = ["캐릭터","말투","대사 샘플","세계관","모드"];
@@ -172,13 +174,16 @@ export default function Sidebar({ character, onApply, onKeyReset, onBack, isSave
           <span>공개 라운지에 공개</span>
         </label>
         {form.isPublic && (
-          <input
-            className="field-input"
-            type="password"
-            placeholder="비밀번호 설정 (선택 — 비우면 자유 입장)"
-            value={form.roomPassword}
-            onChange={(e) => setForm((f) => ({ ...f, roomPassword: e.target.value }))}
-          />
+          <>
+            <input
+              className="field-input"
+              type="password"
+              placeholder="비밀번호 설정 (선택 — 비우면 자유 입장)"
+              value={form.roomPassword}
+              onChange={(e) => setForm((f) => ({ ...f, roomPassword: e.target.value }))}
+            />
+            <BotKeyRegistrar isSaved={isSaved} characterId={form.id} />
+          </>
         )}
       </div>
 
@@ -197,6 +202,50 @@ function Field({ label, children, required }) {
         {label}{required && <span style={{color:"#D85A30"}}> *</span>}
       </label>
       {children}
+    </div>
+  );
+}
+
+function BotKeyRegistrar({ isSaved, characterId }) {
+  const [key, setKey] = useState("");
+  const [status, setStatus] = useState(""); // "saved" | "error" | ""
+  const [loading, setLoading] = useState(false);
+
+  if (!isSaved) {
+    return <p className="field-label" style={{color:"var(--text-hint)"}}>저장 후 API 키를 등록할 수 있어요.</p>;
+  }
+
+  const handleSave = async () => {
+    if (!key.trim()) return;
+    setLoading(true);
+    setStatus("");
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      await saveBotApiKey(session.access_token, characterId, key.trim());
+      setStatus("saved");
+      setKey("");
+    } catch (e) {
+      setStatus("error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+      <label className="field-label">방문자용 API 키 등록</label>
+      <input
+        className="field-input"
+        type="password"
+        placeholder="sk-ant-... (방문자 대신 사용될 키)"
+        value={key}
+        onChange={(e) => setKey(e.target.value)}
+      />
+      <button className="apply-btn" style={{marginTop:0}} onClick={handleSave} disabled={loading || !key.trim()}>
+        {loading ? "저장 중..." : "🔐 키 등록"}
+      </button>
+      {status === "saved" && <p style={{fontSize:12, color:"var(--green)"}}>✓ 등록됐어요! 로그인한 방문자는 키 없이 대화 가능해요.</p>}
+      {status === "error" && <p style={{fontSize:12, color:"#D85A30"}}>저장 실패. 다시 시도해줘요.</p>}
     </div>
   );
 }

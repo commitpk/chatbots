@@ -32,3 +32,44 @@ export async function sendMessageToAPI(apiKey, systemPrompt, history) {
   const data = await response.json();
   return data.content?.[0]?.text ?? "응답을 받지 못했어요.";
 }
+
+/**
+ * 공개 봇 대화 — 서버에서 제작자 키로 호출
+ * @param {string} accessToken - 방문자 supabase 세션 토큰
+ * @param {string} chatbotId
+ * @param {string} systemPrompt
+ * @param {Array}  history
+ */
+export async function sendMessageViaServer(accessToken, chatbotId, systemPrompt, history) {
+  const response = await fetch("/api/chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      chatbotId,
+      system: systemPrompt,
+      messages: history,
+      accessToken,
+    }),
+  });
+
+  const data = await response.json();
+  if (!response.ok) throw new Error(data?.error || `HTTP ${response.status}`);
+  return data.content?.[0]?.text ?? "응답을 받지 못했어요.";
+}
+
+/**
+ * 봇 제작자 API 키를 서버에 저장
+ * @param {string} accessToken
+ * @param {string} chatbotId
+ * @param {string} apiKey
+ */
+export async function saveBotApiKey(accessToken, chatbotId, apiKey) {
+  const response = await fetch("/api/save-key", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ chatbotId, apiKey, accessToken }),
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data?.error || "키 저장 실패");
+  return data;
+}
