@@ -15,6 +15,7 @@ export function buildSystemPrompt(c) {
   if (c.personalityKeywords) lines.push(`- 성격 키워드: ${c.personalityKeywords}`);
   if (c.personalityDesc)     lines.push(`- 성격 상세:\n${c.personalityDesc}`);
   if (c.background)          lines.push(`- 배경/과거사:\n${c.background}`);
+  if (c.emotionStyle)        lines.push(`- 감정 표현 방식:\n${c.emotionStyle}`);
   lines.push(``);
 
   // ── 말투 ──
@@ -23,6 +24,7 @@ export function buildSystemPrompt(c) {
   if (c.userTitle)   lines.push(`- 상대 호칭: ${c.userTitle}`);
   if (c.endings)     lines.push(`- 자주 쓰는 어미: ${c.endings}`);
   if (c.habits)      lines.push(`- 말버릇/추임새: ${c.habits}`);
+  if (c.bodyLanguage) lines.push(`- 신체 언어/행동 습관:\n${c.bodyLanguage}`);
   if (c.forbidden)   lines.push(`- 절대 쓰지 않는 표현: ${c.forbidden}`);
   lines.push(``);
 
@@ -33,6 +35,7 @@ export function buildSystemPrompt(c) {
     ["당황/곤란한 순간", c.sampleFlustered],
     ["화남/단호한 순간", c.sampleAngry],
     ["취약한 순간",      c.sampleVulnerable],
+    ["추가 대사 샘플",   c.extraSamples],
   ].filter(([, v]) => v);
 
   if (samples.length > 0) {
@@ -46,11 +49,13 @@ export function buildSystemPrompt(c) {
   if (c.knowledgeKnows) lines.push(`- 알고 있는 것: ${c.knowledgeKnows}`);
   if (c.knowledgeNot)   lines.push(`- 모르는 것 (말하면 안 됨): ${c.knowledgeNot}`);
   if (c.sensitiveTopic) lines.push(`- 민감한 주제: ${c.sensitiveTopic}`);
+  if (c.characterLine)  lines.push(`- 캐릭터의 선 (절대 하지 않을 것): ${c.characterLine}`);
   lines.push(``);
 
   // ── 모드 ──
   lines.push(`## 역할극 모드`);
   if (c.userPosition)  lines.push(`- 유저 포지션: ${c.userPosition}`);
+  if (c.startSetting)  lines.push(`- 시작 시점/상황: ${c.startSetting}`);
   if (c.charViewUser)  lines.push(`- 유저를 바라보는 시선: ${c.charViewUser}`);
   if (c.defaultMood)   lines.push(`- 기본 분위기: ${c.defaultMood}`);
   if (c.userCallName)  lines.push(`- 유저 호칭: ${c.userCallName}`);

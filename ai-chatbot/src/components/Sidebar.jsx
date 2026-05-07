@@ -3,7 +3,7 @@ import { saveBotApiKey } from "../utils/api";
 import { supabase } from "../utils/supabase";
 import AvatarUploader from "./AvatarUploader";
 
-const SECTIONS = ["캐릭터","말투","대사 샘플","세계관","모드"];
+const SECTIONS = ["캐릭터", "말투", "대사 샘플", "세계관", "모드"];
 
 const DEFAULT = {
   name: "", alias: "", emoji: "🐱", avatarUrl: "",
@@ -55,7 +55,6 @@ export default function Sidebar({ character, onApply, onKeyReset, onBack, isSave
         {/* ── 캐릭터 탭 ── */}
         {tab === 0 && (
           <>
-            {/* 아바타 업로더 */}
             <Field label="아바타 이미지">
               <AvatarUploader
                 avatarUrl={form.avatarUrl}
@@ -63,24 +62,74 @@ export default function Sidebar({ character, onApply, onKeyReset, onBack, isSave
               />
             </Field>
 
-            <Field label="1. 캐릭터 이름 / 애칭" required>
-              <input className="field-input" placeholder="본명" value={form.name} onChange={set("name")} />
-              <input className="field-input" style={{marginTop:6}} placeholder="애칭 (선택)" value={form.alias} onChange={set("alias")} />
+            <Field label="이름 / 애칭" required>
+              <input
+                className="field-input"
+                placeholder="이름"
+                value={form.name}
+                onChange={set("name")}
+              />
+              <input
+                className="field-input"
+                style={{ marginTop: 6 }}
+                placeholder="애칭 (선택)"
+                value={form.alias}
+                onChange={set("alias")}
+              />
             </Field>
-            <Field label="2. 캐릭터 출처">
-              <textarea className="field-input field-textarea" placeholder="원작 작품명, 위키 링크 / 자캐일 경우 세계관 정보" value={form.source} onChange={set("source")} />
+
+            <Field label="출처">
+              <textarea
+                className="field-input field-textarea"
+                placeholder="원작명 또는 세계관"
+                value={form.source}
+                onChange={set("source")}
+              />
             </Field>
-            <Field label="3. 외형 묘사">
-              <textarea className="field-input field-textarea" placeholder="외모, 옷차림, 분위기 등" value={form.appearance} onChange={set("appearance")} />
+
+            <Field label="외형">
+              <textarea
+                className="field-input field-textarea"
+                placeholder="외모, 옷차림, 분위기"
+                value={form.appearance}
+                onChange={set("appearance")}
+              />
             </Field>
-            <Field label="4. 성격 키워드 (5개 이상)">
-              <input className="field-input" placeholder="예: 냉정함, 책임감, 은근한 유머" value={form.personalityKeywords} onChange={set("personalityKeywords")} />
+
+            <Field label="성격 키워드">
+              <input
+                className="field-input"
+                placeholder="냉정함, 책임감, 다정함 (쉼표 구분)"
+                value={form.personalityKeywords}
+                onChange={set("personalityKeywords")}
+              />
             </Field>
-            <Field label="5. 성격 서술">
-              <textarea className="field-input field-textarea tall" placeholder="키워드를 풀어서 설명. 일화나 구체적 장면이 있으면 더 좋습니다." value={form.personalityDesc} onChange={set("personalityDesc")} />
+
+            <Field label="성격 서술">
+              <textarea
+                className="field-input field-textarea tall"
+                placeholder="어떤 상황에서 어떻게 행동하는지 서술"
+                value={form.personalityDesc}
+                onChange={set("personalityDesc")}
+              />
             </Field>
-            <Field label="6. 배경 / 과거사">
-              <textarea className="field-input field-textarea tall" placeholder="중요한 사건, 현재 시점, 나이, 특이점 등" value={form.background} onChange={set("background")} />
+
+            <Field label="배경 / 과거사">
+              <textarea
+                className="field-input field-textarea tall"
+                placeholder="나이, 현재 상황, 중요한 과거 사건"
+                value={form.background}
+                onChange={set("background")}
+              />
+            </Field>
+
+            <Field label="감정 표현 방식">
+              <textarea
+                className="field-input field-textarea"
+                placeholder="기쁠 때, 화날 때, 슬플 때 반응 방식"
+                value={form.emotionStyle || ""}
+                onChange={set("emotionStyle")}
+              />
             </Field>
           </>
         )}
@@ -88,20 +137,60 @@ export default function Sidebar({ character, onApply, onKeyReset, onBack, isSave
         {/* ── 말투 탭 ── */}
         {tab === 1 && (
           <>
-            <Field label="1. 반말 / 존댓말">
-              <input className="field-input" placeholder="예: 기본 반말, 처음엔 존댓말" value={form.speechLevel} onChange={set("speechLevel")} />
+            <p className="tab-desc">💬 말투 설정이 정확할수록 캐릭터가 살아납니다.</p>
+
+            <Field label="반말 / 존댓말">
+              <input
+                className="field-input"
+                placeholder="항상 반말 / 존댓말 / 상대에 따라 다름"
+                value={form.speechLevel}
+                onChange={set("speechLevel")}
+              />
             </Field>
-            <Field label="2. 상대 호칭">
-              <input className="field-input" placeholder="예: 평소엔 이름, 감정 격해지면 '너'" value={form.userTitle} onChange={set("userTitle")} />
+
+            <Field label="자주 쓰는 어미">
+              <input
+                className="field-input"
+                placeholder="~군, ~지, ~다, ~거든"
+                value={form.endings}
+                onChange={set("endings")}
+              />
             </Field>
-            <Field label="3. 자주 쓰는 어미">
-              <input className="field-input" placeholder='예: "~군", "~다", "~거든"' value={form.endings} onChange={set("endings")} />
+
+            <Field label="말버릇 / 추임새">
+              <textarea
+                className="field-input field-textarea"
+                placeholder="자주 쓰는 말버릇이나 추임새"
+                value={form.habits}
+                onChange={set("habits")}
+              />
             </Field>
-            <Field label="4. 말버릇 / 추임새">
-              <textarea className="field-input field-textarea" placeholder={'예: "아니……" 문장 시작, 말줄임표 자주 씀'} value={form.habits} onChange={set("habits")} />
+
+            <Field label="상대 부르는 호칭">
+              <input
+                className="field-input"
+                placeholder="이름 / 너 / 당신 등"
+                value={form.userTitle}
+                onChange={set("userTitle")}
+              />
             </Field>
-            <Field label="5. 절대 쓰지 않는 표현">
-              <textarea className="field-input field-textarea" placeholder="예: 이모지 금지, 인터넷 용어 금지" value={form.forbidden} onChange={set("forbidden")} />
+
+            <Field label="신체 언어 / 행동 습관">
+              <textarea
+                className="field-input field-textarea"
+                placeholder="생각할 때, 긴장할 때 등 자주 하는 행동"
+                value={form.bodyLanguage || ""}
+                onChange={set("bodyLanguage")}
+              />
+            </Field>
+
+            <Field label="절대 쓰지 않는 표현">
+              <textarea
+                className="field-input field-textarea"
+                placeholder="이모지 금지, 인터넷 용어 금지, 먼저 사과 안 함"
+                value={form.forbidden}
+                onChange={set("forbidden")}
+              />
             </Field>
           </>
         )}
@@ -109,21 +198,60 @@ export default function Sidebar({ character, onApply, onKeyReset, onBack, isSave
         {/* ── 대사 샘플 탭 ── */}
         {tab === 2 && (
           <>
-            <p className="tab-desc">💬 대사 샘플은 캐릭터 말투의 기준이 됩니다. 최대한 구체적으로!</p>
-            <Field label="1. 평범한 인사 / 일상">
-              <textarea className="field-input field-textarea" placeholder={'예: "……오늘도 무사히 돌아왔군. 고맙다."'} value={form.sampleGreeting} onChange={set("sampleGreeting")} />
+            <p className="tab-desc">📝 원작 대사나 직접 쓴 샘플이 많을수록 말투가 정확해집니다. 상황별로 최대한 구체적으로!</p>
+
+            <Field label="평범한 인사 / 일상 대화">
+              <textarea
+                className="field-input field-textarea"
+                placeholder="인사나 일상 대화 대사"
+                value={form.sampleGreeting}
+                onChange={set("sampleGreeting")}
+              />
             </Field>
-            <Field label="2. 감동 / 따뜻한 순간">
-              <textarea className="field-input field-textarea" value={form.sampleWarm} onChange={set("sampleWarm")} />
+
+            <Field label="따뜻하거나 감동적인 순간">
+              <textarea
+                className="field-input field-textarea"
+                placeholder="따뜻하거나 고마운 순간의 대사"
+                value={form.sampleWarm}
+                onChange={set("sampleWarm")}
+              />
             </Field>
-            <Field label="3. 당황 / 곤란한 순간">
-              <textarea className="field-input field-textarea" value={form.sampleFlustered} onChange={set("sampleFlustered")} />
+
+            <Field label="당황하거나 곤란한 순간">
+              <textarea
+                className="field-input field-textarea"
+                placeholder="당황하거나 곤란할 때의 대사"
+                value={form.sampleFlustered}
+                onChange={set("sampleFlustered")}
+              />
             </Field>
-            <Field label="4. 화남 / 단호한 순간">
-              <textarea className="field-input field-textarea" value={form.sampleAngry} onChange={set("sampleAngry")} />
+
+            <Field label="화나거나 단호한 순간">
+              <textarea
+                className="field-input field-textarea"
+                placeholder="화나거나 단호할 때의 대사"
+                value={form.sampleAngry}
+                onChange={set("sampleAngry")}
+              />
             </Field>
-            <Field label="5. 부드럽고 취약한 순간">
-              <textarea className="field-input field-textarea" value={form.sampleVulnerable} onChange={set("sampleVulnerable")} />
+
+            <Field label="취약하거나 속마음이 새는 순간">
+              <textarea
+                className="field-input field-textarea"
+                placeholder="속마음이 드러나는 순간의 대사"
+                value={form.sampleVulnerable}
+                onChange={set("sampleVulnerable")}
+              />
+            </Field>
+
+            <Field label="추가 대사 샘플 (원작 명대사 등)">
+              <textarea
+                className="field-input field-textarea tall"
+                placeholder="원작 명대사나 추가 대사 자유 입력"
+                value={form.extraSamples || ""}
+                onChange={set("extraSamples")}
+              />
             </Field>
           </>
         )}
@@ -131,14 +259,42 @@ export default function Sidebar({ character, onApply, onKeyReset, onBack, isSave
         {/* ── 세계관 탭 ── */}
         {tab === 3 && (
           <>
-            <Field label="1. 알고 있는 것">
-              <textarea className="field-input field-textarea" placeholder="캐릭터가 자연스럽게 말해도 되는 지식" value={form.knowledgeKnows} onChange={set("knowledgeKnows")} />
+            <p className="tab-desc">🌍 세계관 지식 범위를 설정하면 몰입감이 높아집니다.</p>
+
+            <Field label="알고 있는 것">
+              <textarea
+                className="field-input field-textarea"
+                placeholder="직업 지식, 아는 인물, 경험한 사건 등"
+                value={form.knowledgeKnows}
+                onChange={set("knowledgeKnows")}
+              />
             </Field>
-            <Field label="2. 모르는 것">
-              <textarea className="field-input field-textarea" placeholder="알 수 없는 것, 말하면 안 되는 것" value={form.knowledgeNot} onChange={set("knowledgeNot")} />
+
+            <Field label="모르는 것 / 말하면 안 되는 것">
+              <textarea
+                className="field-input field-textarea"
+                placeholder="현대 기술, 원작 이후 사건, 금지 언급 등"
+                value={form.knowledgeNot}
+                onChange={set("knowledgeNot")}
+              />
             </Field>
-            <Field label="3. 민감한 주제">
-              <textarea className="field-input field-textarea" placeholder="조심히 다뤄야 하는 것" value={form.sensitiveTopic} onChange={set("sensitiveTopic")} />
+
+            <Field label="민감한 주제">
+              <textarea
+                className="field-input field-textarea"
+                placeholder="가족, 죽음 등 조심히 다룰 주제"
+                value={form.sensitiveTopic}
+                onChange={set("sensitiveTopic")}
+              />
+            </Field>
+
+            <Field label="캐릭터의 선 (절대 하지 않을 것)">
+              <textarea
+                className="field-input field-textarea"
+                placeholder="절대 하지 않는 말이나 행동"
+                value={form.characterLine || ""}
+                onChange={set("characterLine")}
+              />
             </Field>
           </>
         )}
@@ -146,18 +302,51 @@ export default function Sidebar({ character, onApply, onKeyReset, onBack, isSave
         {/* ── 모드 탭 ── */}
         {tab === 4 && (
           <>
-            <p className="tab-desc">🎭 기본적으로 역극 모드로 동작합니다.</p>
-            <Field label="1. 유저의 포지션">
-              <textarea className="field-input field-textarea" placeholder="예: 원작 특정 캐릭터 / 드림캐 / 불특정" value={form.userPosition} onChange={set("userPosition")} />
+            <p className="tab-desc">🎭 역극 모드로 동작합니다. 유저와의 관계를 설정해주세요.</p>
+
+            <Field label="유저의 포지션">
+              <textarea
+                className="field-input field-textarea"
+                placeholder="원작 캐릭터 / 드림캐 / 불특정"
+                value={form.userPosition}
+                onChange={set("userPosition")}
+              />
             </Field>
-            <Field label="2. 캐릭터가 유저를 어떻게 보는지">
-              <textarea className="field-input field-textarea" placeholder="예: 오랜 전우, 보호해야 할 존재" value={form.charViewUser} onChange={set("charViewUser")} />
+
+            <Field label="캐릭터가 유저를 어떻게 보는지">
+              <textarea
+                className="field-input field-textarea"
+                placeholder="오래된 전우, 보호 대상, 라이벌 등"
+                value={form.charViewUser}
+                onChange={set("charViewUser")}
+              />
             </Field>
-            <Field label="3. 기본 분위기">
-              <input className="field-input" placeholder="예: 진지한 역극, 일상 대화, 감성적" value={form.defaultMood} onChange={set("defaultMood")} />
+
+            <Field label="유저 호칭">
+              <input
+                className="field-input"
+                placeholder="이름 / 너 / 선배 등"
+                value={form.userCallName}
+                onChange={set("userCallName")}
+              />
             </Field>
-            <Field label="4. 유저 호칭">
-              <input className="field-input" placeholder="캐릭터가 유저를 뭐라고 부르는지" value={form.userCallName} onChange={set("userCallName")} />
+
+            <Field label="기본 분위기">
+              <input
+                className="field-input"
+                placeholder="진지한 역극 / 일상 대화 / 감성적"
+                value={form.defaultMood}
+                onChange={set("defaultMood")}
+              />
+            </Field>
+
+            <Field label="시작 시점 / 상황 설정">
+              <textarea
+                className="field-input field-textarea"
+                placeholder="퇴근 후 사무실, 첫 만남, 특정 화 이후 등"
+                value={form.startSetting || ""}
+                onChange={set("startSetting")}
+              />
             </Field>
           </>
         )}
@@ -178,7 +367,7 @@ export default function Sidebar({ character, onApply, onKeyReset, onBack, isSave
             <input
               className="field-input"
               type="password"
-              placeholder="비밀번호 설정 (선택 — 비우면 자유 입장)"
+              placeholder="비밀번호 (비우면 자유 입장)"
               value={form.roomPassword}
               onChange={(e) => setForm((f) => ({ ...f, roomPassword: e.target.value }))}
             />
@@ -199,7 +388,7 @@ function Field({ label, children, required }) {
   return (
     <div className="field-group">
       <label className="field-label">
-        {label}{required && <span style={{color:"#D85A30"}}> *</span>}
+        {label}{required && <span style={{ color: "#D85A30" }}> *</span>}
       </label>
       {children}
     </div>
@@ -208,11 +397,11 @@ function Field({ label, children, required }) {
 
 function BotKeyRegistrar({ isSaved, characterId }) {
   const [key, setKey] = useState("");
-  const [status, setStatus] = useState(""); // "saved" | "error" | ""
+  const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
 
   if (!isSaved) {
-    return <p className="field-label" style={{color:"var(--text-hint)"}}>저장 후 API 키를 등록할 수 있어요.</p>;
+    return <p className="field-label" style={{ color: "var(--text-hint)" }}>저장 후 API 키를 등록할 수 있어요.</p>;
   }
 
   const handleSave = async () => {
@@ -241,11 +430,11 @@ function BotKeyRegistrar({ isSaved, characterId }) {
         value={key}
         onChange={(e) => setKey(e.target.value)}
       />
-      <button className="apply-btn" style={{marginTop:0}} onClick={handleSave} disabled={loading || !key.trim()}>
+      <button className="apply-btn" style={{ marginTop: 0 }} onClick={handleSave} disabled={loading || !key.trim()}>
         {loading ? "저장 중..." : "🔐 키 등록"}
       </button>
-      {status === "saved" && <p style={{fontSize:12, color:"var(--green)"}}>✓ 등록됐어요! 로그인한 방문자는 키 없이 대화 가능해요.</p>}
-      {status === "error" && <p style={{fontSize:12, color:"#D85A30"}}>저장 실패. 다시 시도해줘요.</p>}
+      {status === "saved" && <p style={{ fontSize: 12, color: "var(--green)" }}>✓ 등록됐어요! 로그인한 방문자는 키 없이 대화 가능해요.</p>}
+      {status === "error" && <p style={{ fontSize: 12, color: "#D85A30" }}>저장 실패. 다시 시도해줘요.</p>}
     </div>
   );
 }

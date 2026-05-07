@@ -29,6 +29,11 @@ const toSnake = (obj) => ({
   user_call_name:       obj.userCallName,
   is_public:            obj.isPublic ?? false,
   room_password:        obj.roomPassword ?? '',
+  emotion_style:        obj.emotionStyle ?? '',
+  body_language:        obj.bodyLanguage ?? '',
+  extra_samples:        obj.extraSamples ?? '',
+  character_line:       obj.characterLine ?? '',
+  start_setting:        obj.startSetting ?? '',
 });
 
 const toCamel = (row) => ({
@@ -61,6 +66,11 @@ const toCamel = (row) => ({
   userCallName:         row.user_call_name,
   isPublic:             row.is_public,
   roomPassword:         row.room_password,
+  emotionStyle:         row.emotion_style,
+  bodyLanguage:         row.body_language,
+  extraSamples:         row.extra_samples,
+  characterLine:        row.character_line,
+  startSetting:         row.start_setting,
   created_at:           row.created_at,
 });
 
